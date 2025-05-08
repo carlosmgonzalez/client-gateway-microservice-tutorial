@@ -25,13 +25,18 @@ const { error, value } = envsSchema.validate(process.env);
 
 if (error) throw new Error(`Config validation error: ${error.message}`);
 
-const { PORT, PRODUCTS_MICROSERVICE_HOST, PRODUCTS_MICROSERVICE_PORT } =
-  value as EnvsState;
+const {
+  PORT,
+  PRODUCTS_MICROSERVICE_HOST,
+  PRODUCTS_MICROSERVICE_PORT,
+  ORDERS_MICROSERVICE_HOST,
+  ORDERS_MICROSERVICE_PORT,
+} = value as EnvsState;
 
 export const envs = {
   port: PORT,
   productsMicroserviceHost: PRODUCTS_MICROSERVICE_HOST,
   productsMicroservicePort: PRODUCTS_MICROSERVICE_PORT,
-  ordersMicroserviceHost: PRODUCTS_MICROSERVICE_HOST,
-  ordersMicroservicePort: PRODUCTS_MICROSERVICE_PORT,
+  ordersMicroserviceHost: ORDERS_MICROSERVICE_HOST,
+  ordersMicroservicePort: ORDERS_MICROSERVICE_PORT,
 };

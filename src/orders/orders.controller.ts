@@ -4,13 +4,17 @@ import {
   Post,
   Body,
   Param,
-  Delete,
-  ParseIntPipe,
   Inject,
+  ParseUUIDPipe,
+  Query,
+  Patch,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ORDER_SERVICE } from 'src/config/services';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { catchError } from 'rxjs';
+import { PaginationOrdersDto } from 'src/orders/dto/pagination-orders.dto';
+import { ChangeOrderStatusDto } from './dto/change-status-orden.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -20,21 +24,41 @@ export class OrdersController {
 
   @Post()
   createOrder(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersClient.send('createOrder', createOrderDto);
+    return this.ordersClient.send('createOrder', createOrderDto).pipe(
+      catchError((err) => {
+        throw new RpcException(err as object);
+      }),
+    );
   }
 
   @Get()
-  findAllOrders() {
-    return;
+  findAllOrders(@Query() paginationOrdersDto: PaginationOrdersDto) {
+    return this.ordersClient.send('findAllOrders', paginationOrdersDto);
   }
 
   @Get(':id')
-  findOneOrder(@Param('id', ParseIntPipe) id: number) {
-    return id;
+  findOneOrder(@Param('id', ParseUUIDPipe) id: string) {
+    return this.ordersClient.send('findOneOrder', id).pipe(
+      catchError((err) => {
+        throw new RpcException(err as object);
+      }),
+    );
   }
 
-  @Delete(':id')
-  changeOrderStatus(@Param('id', ParseIntPipe) id: number) {
-    return id;
+  @Patch(':id')
+  changeOrderStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() changeOrdenStatusDto: ChangeOrderStatusDto,
+  ) {
+    return this.ordersClient
+      .send('changeOrderStatus', {
+        id,
+        ...changeOrdenStatusDto,
+      })
+      .pipe(
+        catchError((err) => {
+          throw new RpcException(err as object);
+        }),
+      );
   }
 }
